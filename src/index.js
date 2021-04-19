@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Moment from 'react-moment';
+// import Moment from 'react-moment';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';

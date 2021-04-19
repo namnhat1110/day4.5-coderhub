@@ -12,13 +12,19 @@ import './App.css';
 
 
 function App() {
-
-  const [pageNumber, setPageNumber] = useState(0)
-  const [readMe, setReadme] = useState(``)
   const [repos, setRepos] = useState([])
   const [users, setUsers] = useState([])
   const [issues, setIssues] = useState([])
+
+  const [pageNumber, setPageNumber] = useState(0)
+  const [pageTotal, setPageTotal] = useState(0)
+  const [userTotal, setUserTotal] = useState(0)
+  const [issuesTotal, setIssuesTotal] = useState(0)
+
+  const [readMe, setReadme] = useState(``)
   const [searchTerm, setSearchTerm] = useState(``)
+
+  const totalPage = Math.floor(pageTotal / 30)
   console.log(searchTerm)
 
   const onSearchCoderHub = async (e) => {
@@ -28,30 +34,46 @@ function App() {
     onSearchIssues()
   }
 
-  const onSearchRepo = async () => {
-    const searchPage = pageNumber + 1
-    console.log("onSearchCoderHub")
-    const response = await fetch(`https://api.github.com/search/repositories?q=${searchTerm}&page=${searchPage}`)
+  const onSearchRepo = async (page) => {
+    // const searchPage = pageNumber + 1
+    const response = await fetch(`https://api.github.com/search/repositories?q=${searchTerm}&page=${pageNumber}`)
     const json = await response.json()
     console.log({ json })
     setRepos(json.items)
-    setPageNumber(searchPage)
+    setPageTotal(json.total_count)
+    if (page > 1) {
+      setPageNumber(page)
+    } else {
+      setPageNumber(1)
+    }
   }
 
-  const onSearchUsers = async () => {
-    const searchPage = pageNumber + 1
-    const response = await fetch(`https://api.github.com/search/users?q=${searchTerm}&page=${searchPage}`)
+  const onSearchUsers = async (page) => {
+    // const searchPage = pageNumber + 1
+    const response = await fetch(`https://api.github.com/search/users?q=${searchTerm}&page=${pageNumber}`)
     const json = await response.json()
     console.log({ json })
     setUsers(json.items)
+    setUserTotal(json.total_count)
+    if (page > 1) {
+      setPageNumber(page)
+    } else {
+      setPageNumber(1)
+    }
   }
 
-  const onSearchIssues = async () => {
-    const searchPage = pageNumber + 1
-    const response = await fetch(`https://api.github.com/search/issues?q=${searchTerm}&page=${searchPage}`)
+  const onSearchIssues = async (page) => {
+    // const searchPage = pageNumber + 1
+    const response = await fetch(`https://api.github.com/search/issues?q=${searchTerm}&page=${pageNumber}`)
     const json = await response.json()
     console.log({ json })
     setIssues(json.items)
+    setIssuesTotal(json.total_count)
+    if (page > 1) {
+      setPageNumber(page)
+    } else {
+      setPageNumber(1)
+    }
   }
 
   const fetchReadme = async () => {
@@ -97,13 +119,13 @@ function App() {
             <Col sm={3}>
               <Nav variant="pills" className="flex-column">
                 <Nav.Item>
-                  <Nav.Link eventKey="first">Repo</Nav.Link>
+                  <Nav.Link eventKey="first">Repo {pageTotal}</Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
-                  <Nav.Link eventKey="second">User</Nav.Link>
+                  <Nav.Link eventKey="second">User {userTotal}</Nav.Link>
                 </Nav.Item>
                 <Nav.Item>
-                  <Nav.Link eventKey="third">Issue</Nav.Link>
+                  <Nav.Link eventKey="third">Issue {issuesTotal}</Nav.Link>
                 </Nav.Item>
               </Nav>
             </Col>
@@ -115,7 +137,9 @@ function App() {
                   <RepoTab repos={repos} />
                   <PaginationBar
                     pageNumber={pageNumber}
-                    onSearchCoderHub={onSearchCoderHub} />
+                    pageTotal={pageTotal}
+                    onSearchCoderHub={onSearchCoderHub}
+                    totalPage={totalPage} />
                 </Tab.Pane>
 
                 <Tab.Pane eventKey="second">
@@ -124,14 +148,23 @@ function App() {
                     return (
                       <Card class="border mb-2">
                         <Card.Body>
-                          <Card.Title>
-                            <a href={u.login}>{u.login}</a>
-
-                          </Card.Title>
+                          <Row>
+                            <Col className="col-img" sm={3} lg={3}>
+                              <img src={u.avatar_url} alt="avartar" />
+                            </Col>
+                            <Col className="col-text" sm={9} lg={9}>
+                              <a href={u.login}>{u.login}</a>
+                            </Col>
+                          </Row>
                         </Card.Body>
                       </Card>
                     )
                   })}
+                  <PaginationBar
+                    pageNumber={pageNumber}
+                    userTotal={userTotal}
+                    onSearchCoderHub={onSearchCoderHub}
+                    totalPage={totalPage} />
                 </Tab.Pane>
 
                 <Tab.Pane eventKey="third">
@@ -148,15 +181,19 @@ function App() {
                           </Card.Title>
 
                           <Card.Text>
-                            {i.body}
-                            <MarkdownRenderer markdown={readMe} />
+
                           </Card.Text>
-                          <Card.Link href="#">{i.user.login} opened {<Moment format="fromNow ago">{i.updated_at}</Moment>}</Card.Link>
+                          <Card.Link href="#">{i.user.login} opened {i.updated_at}</Card.Link>
 
                         </Card.Body>
                       </Card>
                     )
                   })}
+                  <PaginationBar
+                    pageNumber={pageNumber}
+                    issuesTotal={issuesTotal}
+                    onSearchCoderHub={onSearchCoderHub}
+                    totalPage={totalPage} />
                 </Tab.Pane>
 
               </Tab.Content>
